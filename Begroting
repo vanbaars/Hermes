@@ -1,0 +1,23 @@
+----------------------------------------------------
+-- Verschillende queries voor de Apex Hermes2 - Begroting
+-- Versie 0.1        Datum 19-09-2018
+----------------------------------------------------
+
+----------------------------------------------------
+-- Budgetmutaties algemeen
+-- Overzichtrapport van budgetmutaties
+----------------------------------------------------
+select *
+from HMS_BUDGET_MUTATIES hbm
+where hbm.ministerie = 1
+;
+
+select *
+from hms_projecten hpr
+where hpr.ministerie = 1
+;
+
+select *
+from user_policies up
+where up.policy_name = 'MINISTERIE_POLICY'
+;
