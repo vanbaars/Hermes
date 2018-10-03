@@ -1,6 +1,9 @@
+
 ----------------------------------------------------
 -- Verschillende queries voor de Apex Hermes2 - Begroting
 -- Versie 0.1        Datum 19-09-2018
+-- * Budgetmutaties algemeen
+-- * GL interface
 ----------------------------------------------------
 
 ----------------------------------------------------
@@ -20,4 +23,34 @@ where hpr.ministerie = 1
 select *
 from user_policies up
 where up.policy_name = 'MINISTERIE_POLICY'
+;
+
+------------------------------------------
+-- gl interface
+------------------------------------------
+select gi.status                    status
+,      gi.accounting_date       
+,      gi.period_name
+,      gi.currency_code
+,      gi.actual_flag
+,      gl.name
+,      gi.user_je_category_name     categorie
+,      gi.user_je_source_name       bron
+,      gi.budget_version_id         budget_v_id
+,      gi.code_combination_id
+,      gcc.segment1||'.'||gcc.segment2||'.'||gcc.segment3||'.'||gcc.segment4||'.'||gcc.segment5||'.'||gcc.segment6||'.'||gcc.segment7||'.'||gcc.segment8 GB_sleutel
+,      gi.entered_cr
+,      gi.entered_dr
+,      gi.accounted_cr
+,      gi.accounted_dr
+,      gi.date_created
+,      gi.reference10
+from gl_interface gi
+,    gl_code_combinations gcc
+,    gl_ledgers gl
+where 4=4
+and   gi.code_combination_id = gcc.code_combination_id
+and   gi.ledger_id = gl.ledger_id
+and trunc(gi.date_created) =  trunc(sysdate)
+--and gi.reference10 like '%20181006%'
 ;
