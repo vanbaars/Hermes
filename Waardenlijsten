@@ -35,7 +35,7 @@ order by code
 ----------------------------------------------------
 select * 
 from xxhermes2.hms_begrotings_stukken
-order by code
+order by id
 ;
 ----------------------------------------------------
 -- Oorzaken
@@ -51,15 +51,27 @@ order by code
 ----------------------------------------------------
 select *
 from  xxhermes2.hms_selectiecriteria
-order by to_number(nummer), naam
+where ministerie = 1
+and   nummer = 4
+--and   naam like 'EvB%'
+order by ministerie, to_number(nummer), naam
 ;
 ----------------------------------------------------
 -- Soorten
 -- HMS_MUTATIE_SOORTEN
 ----------------------------------------------------
-SELECT * 
-FROM xxhermes2.hms_mutatie_soorten
-order by code;
+select hms.code code
+,      hms.naam naam
+,      hms.invoer invoer
+,      hmv.naam verwerking
+,      hms.controle controle
+,      hms.active actief
+from xxhermes2.hms_mutatie_soorten hms
+,    xxhermes2.hms_mutatie_verwerkingen hmv
+where hms.mkg_id = hmv.id
+order by hms.code
+;
+
 ----------------------------------------------------
 -- Verwerkingen
 -- HMS_MUTATIE_VERWERKINGEN
@@ -155,4 +167,3 @@ order by to_number(code)
 select *
 from xxhermes2.hms_budgethouders
 ;
-
