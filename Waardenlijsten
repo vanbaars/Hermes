@@ -1,0 +1,158 @@
+
+----------------------------------------------------
+-- Verschillende queries voor de Apex Hermes2 - LOV tabellen
+-- Versie 0.1        Datum 20-08-2019
+-- * Aanleidingen
+-- * Begrotingsstukken
+-- * Oorzaken
+-- * Selectiecriteria
+-- * Soorten
+-- * Verwerkingen
+-- * Voortgang
+-- * Begroting en fondsen
+-- * Categorieën
+-- * Disciplinesectoren
+-- * Economische codes
+-- * Functionele codes
+-- * Rekenritmes
+-- * Relevant
+-- * Looncodes
+-- * Prijscodes
+-- * Budgethouders
+----------------------------------------------------
+
+----------------------------------------------------
+-- Aanleidingen
+-- HMS_MUTATIE_AANLEIDINGEN
+----------------------------------------------------
+select * 
+from xxhermes2.hms_mutatie_aanleidingen
+order by code
+;
+----------------------------------------------------
+-- Begrotingsstukken
+-- HMS_BEGROTINGS_STUKKEN
+----------------------------------------------------
+select * 
+from xxhermes2.hms_begrotings_stukken
+order by code
+;
+----------------------------------------------------
+-- Oorzaken
+-- HMS_MUTATIE_OORZAKEN
+----------------------------------------------------
+select *
+from xxhermes2.hms_mutatie_oorzaken
+order by code
+;
+----------------------------------------------------
+-- Selectiecriteria
+-- HMS_SELECTIECRITERIA
+----------------------------------------------------
+select *
+from  xxhermes2.hms_selectiecriteria
+order by to_number(nummer), naam
+;
+----------------------------------------------------
+-- Soorten
+-- HMS_MUTATIE_SOORTEN
+----------------------------------------------------
+SELECT * 
+FROM xxhermes2.hms_mutatie_soorten
+order by code;
+----------------------------------------------------
+-- Verwerkingen
+-- HMS_MUTATIE_VERWERKINGEN
+----------------------------------------------------
+select *
+from xxhermes2.hms_mutatie_verwerkingen
+order by code
+;
+----------------------------------------------------
+-- Voortgang
+-- HMS_MUTATIE_VOORTGANG
+----------------------------------------------------
+select *
+from xxhermes2.hms_mutatie_voortgang
+order by code
+;
+----------------------------------------------------
+-- Begroting en fondsen
+-- HMS_BEGROTINGEN_EN_FONDSEN
+----------------------------------------------------
+select *
+from xxhermes2.hms_begrotingen_en_fondsen
+order by code;
+----------------------------------------------------
+-- Categorieën
+-- HMS_CATEGORIEEN
+----------------------------------------------------
+select * 
+from xxhermes2.hms_categorieen
+--order by naam
+;
+----------------------------------------------------
+-- Disciplinesectoren
+-- HMS_DISCIPLINE_SECTOREN
+----------------------------------------------------
+select *
+from xxhermes2.hms_discipline_sectoren
+order by code
+;
+----------------------------------------------------
+-- Economische codes
+-- HMS_FUNCTIONELE_CODES
+----------------------------------------------------
+select *
+from xxhermes2.hms_functionele_codes
+order by code
+;
+----------------------------------------------------
+-- Functionele codes
+-- HMS_FUNCTIONELE_CODES
+----------------------------------------------------
+select *
+from xxhermes2.hms_functionele_codes
+order by code
+;
+----------------------------------------------------
+-- Rekenritmes
+-- HMS_REKENRITMES
+----------------------------------------------------
+select *
+from xxhermes2.hms_functionele_codes
+order by code
+;
+----------------------------------------------------
+-- Relevant
+-- HMS_RELEVANT
+----------------------------------------------------
+select * 
+from xxhermes2.hms_relevant
+order by code
+;
+----------------------------------------------------
+-- Looncodes
+-- HMS_LOONCODES
+----------------------------------------------------
+select *
+from xxhermes2.hms_looncodes
+--order by code
+order by lpad(cast(code as VARCHAR2(3 BYTE)),3,'000')
+;
+----------------------------------------------------
+-- Prijscodes
+-- HMS_PRIJSCODES
+----------------------------------------------------
+select *
+from xxhermes2.hms_prijscodes
+order by to_number(code)
+;
+----------------------------------------------------
+-- Budgethouders
+-- HMS_BUDGETHOUDERS
+----------------------------------------------------
+select *
+from xxhermes2.hms_budgethouders
+;
+
