@@ -27,6 +27,7 @@
 ----------------------------------------------------
 select * 
 from xxhermes2.hms_mutatie_aanleidingen
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -35,6 +36,7 @@ order by code
 ----------------------------------------------------
 select * 
 from xxhermes2.hms_begrotings_stukken
+where active = 'Y'
 order by id
 ;
 ----------------------------------------------------
@@ -43,6 +45,7 @@ order by id
 ----------------------------------------------------
 select *
 from xxhermes2.hms_mutatie_oorzaken
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -52,8 +55,8 @@ order by code
 select *
 from  xxhermes2.hms_selectiecriteria
 where ministerie = 1
-and   nummer = 4
---and   naam like 'EvB%'
+and   nummer = 9
+and   active = 'Y'
 order by ministerie, to_number(nummer), naam
 ;
 ----------------------------------------------------
@@ -69,6 +72,7 @@ select hms.code code
 from xxhermes2.hms_mutatie_soorten hms
 ,    xxhermes2.hms_mutatie_verwerkingen hmv
 where hms.mkg_id = hmv.id
+and   hms.active = 'Y'
 order by hms.code
 ;
 
@@ -78,6 +82,7 @@ order by hms.code
 ----------------------------------------------------
 select *
 from xxhermes2.hms_mutatie_verwerkingen
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -86,6 +91,7 @@ order by code
 ----------------------------------------------------
 select *
 from xxhermes2.hms_mutatie_voortgang
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -94,14 +100,19 @@ order by code
 ----------------------------------------------------
 select *
 from xxhermes2.hms_begrotingen_en_fondsen
-order by code;
+where active = 'Y'
+order by code
+;
 ----------------------------------------------------
 -- Categorieën
 -- HMS_CATEGORIEEN
 ----------------------------------------------------
 select * 
 from xxhermes2.hms_categorieen
---order by naam
+where 4=4
+and active = 'Y'
+and ministerie = 1
+order by code
 ;
 ----------------------------------------------------
 -- Disciplinesectoren
@@ -109,15 +120,17 @@ from xxhermes2.hms_categorieen
 ----------------------------------------------------
 select *
 from xxhermes2.hms_discipline_sectoren
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
 -- Economische codes
--- HMS_FUNCTIONELE_CODES
+-- HMS_ECONOMISCHE_CODES
 ----------------------------------------------------
 select *
-from xxhermes2.hms_functionele_codes
-order by code
+from xxhermes2.hms_economische_codes
+where active = 'Y'
+order by id
 ;
 ----------------------------------------------------
 -- Functionele codes
@@ -125,6 +138,7 @@ order by code
 ----------------------------------------------------
 select *
 from xxhermes2.hms_functionele_codes
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -132,7 +146,8 @@ order by code
 -- HMS_REKENRITMES
 ----------------------------------------------------
 select *
-from xxhermes2.hms_functionele_codes
+from xxhermes2.hms_rekenritmes
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -141,6 +156,7 @@ order by code
 ----------------------------------------------------
 select * 
 from xxhermes2.hms_relevant
+where active = 'Y'
 order by code
 ;
 ----------------------------------------------------
@@ -149,6 +165,7 @@ order by code
 ----------------------------------------------------
 select *
 from xxhermes2.hms_looncodes
+where active = 'Y'
 --order by code
 order by lpad(cast(code as VARCHAR2(3 BYTE)),3,'000')
 ;
@@ -158,6 +175,7 @@ order by lpad(cast(code as VARCHAR2(3 BYTE)),3,'000')
 ----------------------------------------------------
 select *
 from xxhermes2.hms_prijscodes
+where active = 'Y'
 order by to_number(code)
 ;
 ----------------------------------------------------
@@ -166,4 +184,6 @@ order by to_number(code)
 ----------------------------------------------------
 select *
 from xxhermes2.hms_budgethouders
+Where ministerie = 1
+;
 ;
