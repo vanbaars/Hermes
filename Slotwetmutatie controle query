@@ -1,0 +1,232 @@
+-- query om slotwetmutaties te controleren. 
+-- Datum 27-01-2020
+-- Parameters 
+--   * instrument
+--   * ministerie
+--   * jaar 
+
+select instrument
+,      jaar
+,      ministerie
+,      round(sum (REA_U_V_19)/1000,0)                       REA_U_V_19
+,      sum (BUDG_U_V_19)                                    BUDG_U_V_19
+,      round(sum (REA_U_V_19)/1000,0) - sum(BUDG_U_V_19)    SLOTW_U_V_19     
+,      round(sum (REA_U_K_19)/1000,0)                       REA_U_K_19
+,      sum (BUDG_U_K_19)                                    BUDG_U_K_19    
+,      round(sum (REA_U_K_19)/1000,0) - sum(BUDG_U_K_19)    SLOTW_U_K_19
+,      round(sum (REA_O_K_19)/1000,0)                       REA_O_K_19
+,      sum (BUDG_O_K_19)                                    BUDG_O_K_19
+,      round(sum (REA_O_K_19)/1000,0) - sum(BUDG_O_K_19)    SLOTW_O_K_19    
+from (    
+    -- Haal de realisatie op van de verplichtingen direct uit EBS tabellen
+    select  gcc.segment3 instrument
+    ,       glb.period_year jaar
+    ,       decode( gcc.segment1,  '0001', '1',     --RVO EZK
+                                   '0002', '1',     --KD EZK
+                                   '0003', '1',     --ACM EZK
+                                   '0005', '2',     --RVO LNV
+                                   '0006', '2',     --KD LNV
+                                   '666') Ministerie
+--    ,       round(((glb.begin_balance_dr - glb.begin_balance_cr) + (glb.period_net_dr - glb.period_net_cr))/1000,0) REA_U_V_19
+--    ,       ((glb.begin_balance_dr - glb.begin_balance_cr) + (glb.period_net_dr - glb.period_net_cr)) REA_U_V_19
+    ,       (glb.period_net_dr - glb.period_net_cr) REA_U_V_19
+    ,       0    BUDG_U_V_19
+    ,       0    REA_U_K_19
+    ,       0    BUDG_U_K_19
+    ,       0    REA_O_K_19
+    ,       0    BUDG_O_K_19
+    from gl_balances glb
+    ,    gl_code_combinations gcc
+    ,    gl_summary_templates gst
+    where 4=4
+    and glb.code_combination_id = gcc.code_combination_id 
+    and gcc.template_id         = gst.template_id
+    and upper(gst.concatenated_description) = 'D.T.D.D.T.T.T.T'    -- totaal per bedrijf, instrument en kostensoort
+    --and upper(gst.concatenated_description) = 'D.T.D.T.T.T.T.T'     --totaal per bedrijf en instrument
+    and glb.actual_flag = 'E'                                       -- Encumbrance = verplichting boekingen     
+    and (glb.encumbrance_type_id = 1000                             -- 1000 = zachte verplichting 
+         or glb.encumbrance_type_id = 1001                          -- 1001 = harde verplichting 
+         or glb.encumbrance_type_id = 1081)                          -- 1081 = middelen blokkering
+--    and glb.ledger_id = 2267                                        -- vpl grootboek  (2228 is kas grootboek)
+    and ((glb.ledger_id = 2267                                        -- EZK_LNV_KV_VPL vpl grootboek  (2228 is kas grootboek)
+         and gcc.segment1 in ('0002','0003','0006')
+         )or 
+         (glb.ledger_id = 2128                                        -- RVO PG KV VPL vpl grootboek  (2127 is kas grootboek)
+          and gcc.segment1 in ('0001','0005')
+        ))  
+--    and glb.period_year = 2019                                      -- boekjaar EBS
+--    and glb.period_num = 12                                         -- periode nummer 12 = december
+UNION ALL    
+   -- Haal de realisatie op van de Uitgaven Kas direct uit EBS tabellen
+    select  gcc.segment3 instrument
+    ,       glb.period_year jaar
+    ,       decode( gcc.segment1,  '0001', '1',     --RVO EZK
+                                   '0002', '1',     --KD EZK
+                                   '0003', '1',     --ACM EZK
+                                   '0005', '2',     --RVO LNV
+                                   '0006', '2',     --KD LNV
+                                   '666') Ministerie
+    ,       0    REA_U_V_19
+    ,       0    BUDG_U_V_19
+--    ,       round(((glb.begin_balance_dr - glb.begin_balance_cr) + (glb.period_net_dr - glb.period_net_cr))/1000,0) REA_U_K_19
+--    ,       ((glb.begin_balance_dr - glb.begin_balance_cr) + (glb.period_net_dr - glb.period_net_cr)) REA_U_K_19
+    ,       (glb.period_net_dr - glb.period_net_cr) REA_U_K_19
+    ,       0    BUDG_U_K_19
+    ,       0    REA_O_K_19
+    ,       0    BUDG_O_K_19
+    from gl_balances glb
+    ,    gl_code_combinations gcc
+    ,    gl_summary_templates gst
+    where 4=4
+    and glb.code_combination_id = gcc.code_combination_id 
+    and gcc.template_id         = gst.template_id
+    and upper(gst.concatenated_description) = 'D.T.D.D.T.T.T.T'    -- totaal per bedrijf, instrument en kostensoort
+    --and upper(gst.concatenated_description) = 'D.T.D.T.T.T.T.T'     --totaal per bedrijf en instrument
+    and glb.actual_flag = 'A'                                       -- Actual = kas boekingen     
+    and gcc.segment4 like '4%'                                      -- kostensoort van uitgaven reeks    
+    and ((glb.ledger_id = 2228                                        -- EZK_LNV_KV_KAS kas grootboek  (2267 is vpl grootboek)
+         and gcc.segment1 in ('0002','0003','0006')
+         )or 
+         (glb.ledger_id = 2127                                        -- RVO PG KV KAS kas grootboek  (2128 is vpl grootboek)
+          and gcc.segment1 in ('0001','0005')
+        ))
+--    and glb.period_year = 2019                                      -- boekjaar EBS
+--    and glb.period_num = 12                                         -- periode nummer 12 = december
+UNION ALL
+   -- Haal de realisatie op van de Ontvangsten Kas direct uit EBS tabellen
+    select  gcc.segment3 instrument
+    ,       glb.period_year jaar
+    ,       decode( gcc.segment1,  '0001', '1',     --RVO EZK
+                                   '0002', '1',     --KD EZK
+                                   '0003', '1',     --ACM EZK
+                                   '0005', '2',     --RVO LNV
+                                   '0006', '2',     --KD LNV
+                                   '666') Ministerie
+    ,       0    REA_U_V_19
+    ,       0    BUDG_U_V_19
+    ,       0    REA_U_K_19
+    ,       0    BUDG_U_K_19
+--    ,       round(((glb.begin_balance_dr - glb.begin_balance_cr) + (glb.period_net_dr - glb.period_net_cr))/1000,0)*-1   REA_O_K_19
+--    ,       ((glb.begin_balance_dr - glb.begin_balance_cr) + (glb.period_net_dr - glb.period_net_cr))*-1 REA_O_K_19
+    ,       (glb.period_net_dr - glb.period_net_cr)*-1 REA_O_K_19
+    ,       0    BUDG_O_K_19
+    from gl_balances glb
+    ,    gl_code_combinations gcc
+    ,    gl_summary_templates gst
+    where 4=4
+    and glb.code_combination_id = gcc.code_combination_id 
+    and gcc.template_id         = gst.template_id
+    and upper(gst.concatenated_description) = 'D.T.D.D.T.T.T.T'    -- totaal per bedrijf, instrument en kostensoort
+    --and upper(gst.concatenated_description) = 'D.T.D.T.T.T.T.T'     --totaal per bedrijf en instrument
+    and glb.actual_flag = 'A'                                       -- Actual = kas boekingen     
+    and gcc.segment4 like '8%'                                      -- kostensoort van uitgaven reeks    
+    and ((glb.ledger_id = 2228                                        -- EZK_LNV_KV_KAS kas grootboek  (2267 is vpl grootboek)
+         and gcc.segment1 in ('0002','0003','0006')
+         )or 
+         (glb.ledger_id = 2127                                        -- RVO PG KV KAS kas grootboek  (2128 is vpl grootboek)
+          and gcc.segment1 in ('0001','0005')
+          ))
+--    and glb.period_year = 2019                                      -- boekjaar EBS
+--    and glb.period_num = 12                                         -- periode nummer 12 = december
+UNION ALL    
+    --Budget Uitgaven Verplichtingen 
+    select  gcc.segment3 instrument
+    ,       hpr.jaar jaar
+    ,       to_char(hbm.ministerie)
+    ,       0    REA_U_V_19
+    ,       sum (hpr.bedrag)    BUDG_U_V_19
+    ,       0    REA_U_K_19
+    ,       0    BUDG_U_K_19
+    ,       0    REA_O_K_19
+    ,       0    BUDG_O_K_19
+    from xxhermes2.hms_budget_mutaties     hbm
+    ,    xxhermes2.hms_mutatie_posten      hmp
+    ,    xxhermes2.hms_post_regels         hpr
+    ,    gl_code_combinations    gcc
+    ,    xxhermes2.hms_mutatie_voortgang   hmv
+    ,    xxhermes2.hms_mutatie_soorten     hms
+    where hbm.id = hmp.bme_id
+    and   hmp.id = hpr.mpt_id
+    and   hmp.code_combination_id = gcc.code_combination_id
+    and   hbm.mgg_id = hmv.id
+    and   hbm.mst_id = hms.id
+    and   hmv.id = 6 --Goedgekeurd
+    and   hms.id <> 62  --Jaarwissel
+    and   hmp.type = 'P'  --Parent
+    and   hmp.soort = 'V'  --Verplicting
+--    and   hbm.ministerie = 1  -- Min LNV
+--    and   hpr.jaar = '2019'
+    group by  gcc.segment3 , hmp.type , hmp.soort , hpr.jaar ,   hbm.ministerie
+UNION ALL
+    --Budget Uitgaven Kas 
+    select  gcc.segment3 instrument
+    ,       hpr.jaar jaar
+    ,       to_char(hbm.ministerie)
+    ,       0    REA_U_V_19
+    ,       0    BUDG_U_V_19
+    ,       0    REA_U_K_19
+    ,       sum (hpr.bedrag)    BUDG_U_K_19
+    ,       0    REA_O_K_19
+    ,       0    BUDG_O_K_19
+    from xxhermes2.hms_budget_mutaties     hbm
+    ,    xxhermes2.hms_mutatie_posten      hmpp
+    ,    xxhermes2.hms_mutatie_posten      hmpc
+    ,    xxhermes2.hms_post_regels         hpr
+    ,    gl_code_combinations    gcc
+    ,    xxhermes2.hms_mutatie_voortgang   hmv
+    ,    xxhermes2.hms_mutatie_soorten     hms
+    where hbm.id = hmpp.bme_id
+    --and   hbm.id = hmpc.bme_id
+    and   hmpp.id = hmpc.mpt_id
+    and   hmpc.id = hpr.mpt_id
+    and   hmpp.code_combination_id = gcc.code_combination_id
+    and   hbm.mgg_id = hmv.id
+    and   hbm.mst_id = hms.id
+    and   hmv.id = 6 --Goedgekeurd
+    and   hms.id <> 62  --Jaarwissel
+    and   hmpp.type = 'P'  --Parent
+    and   hmpp.soort = 'V'    --Verplichting
+    and   hmpc.type = 'C'    --Child
+    and   hmpc.soort = 'K'   --Kas
+--    and   hpr.ministerie = 1
+--    and   hpr.jaar = '2019'
+    group by  gcc.segment3 , hmpc.type , hmpc.soort , hpr.jaar ,   hbm.ministerie
+UNION ALL
+    --Budget Ontvangsten Kas
+    select  gcc.segment3 instrument
+    ,       hpr.jaar jaar
+    ,       to_char(hbm.ministerie)
+    ,       0    REA_U_V_19
+    ,       0    BUDG_U_V_19
+    ,       0    REA_U_K_19
+    ,       0    BUDG_U_K_19
+    ,       0    REA_O_K_19
+    ,       sum (hpr.bedrag)    BUDG_O_K_19
+    from xxhermes2.hms_budget_mutaties     hbm
+    ,    xxhermes2.hms_mutatie_posten      hmp
+    ,    xxhermes2.hms_post_regels         hpr
+    ,    gl_code_combinations    gcc
+    ,    xxhermes2.hms_mutatie_voortgang   hmv
+    ,    xxhermes2.hms_mutatie_soorten     hms
+    where hbm.id = hmp.bme_id
+    and   hmp.id = hpr.mpt_id
+    and   hmp.code_combination_id = gcc.code_combination_id
+    and   hbm.mgg_id = hmv.id
+    and   hbm.mst_id = hms.id
+    and   hmv.id = 6 --Goedgekeurd
+    and   hms.id <> 62  --Jaarwissel
+    and   hmp.type = 'P'    -- Parent
+    and   hmp.soort = 'K'    -- Kas
+--    and   hpr.ministerie = 1
+--    and   hpr.jaar = '2019'
+    group by  gcc.segment3 , hmp.type , hmp.soort , hpr.jaar ,   hbm.ministerie
+)  Rea_en_Budg
+where 4=4
+and  instrument = '040000'
+--and  instrument in ('318100','318410','318600','328000','328200','328500','328600','328700','328800','347600')
+and  ministerie = '1'
+and  jaar = '2019'
+group by instrument, ministerie, jaar
+order by instrument
+;
+
